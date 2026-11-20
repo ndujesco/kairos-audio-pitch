@@ -2,6 +2,8 @@
 
 A simple audio player with repeat enabled by default, a speed selector and a restart button. No build or installation is needed.
 
+The player has a full-width timeline with a large drag handle, elapsed and total time, a prominent play/pause button, and 10-second back/forward buttons. On small screens the timeline has a 60px touch area and a 36px handle. Drag or tap it to move to a particular time; keyboard arrow keys also adjust playback position. The browser's native player remains available when JavaScript is disabled.
+
 Open [index.html](index.html) in your browser and press Play. Keep `pitch.mp3` beside `index.html` when moving or downloading the player.
 
 ## Listen while using your phone
