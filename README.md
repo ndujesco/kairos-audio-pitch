@@ -4,6 +4,12 @@ A simple audio player with repeat enabled by default, a speed selector and a res
 
 Open [index.html](index.html) in your browser and press Play. Keep `pitch.mp3` beside `index.html` when moving or downloading the player.
 
+## Listen while using your phone
+
+Start playback, then switch apps or lock the screen while leaving the browser tab open. The player uses native audio and native looping, and adds play, pause and seek controls to the lock screen or media notification where supported. It also requests the playback audio-session mode when the browser provides it.
+
+Closing the tab or quitting the browser ends playback. Background playback still depends on your phone and browser; the page cannot override operating-system restrictions or interruptions. The controls and looping have been checked in desktop Chrome, but a physical phone/locked-screen test is still needed. See the [Media Session guide](https://web.dev/articles/media-session).
+
 ## Update the voice note
 
 1. Replace `pitch.mp3` with the latest MP3 recording, keeping the same filename.

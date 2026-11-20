@@ -37,7 +37,7 @@
     </div>
     <h1>Kairos audio pitch</h1>
     <p>Press play. It repeats automatically.</p>
-    <audio id="audio" controls loop preload="metadata" aria-label="Kairos audio pitch">
+    <audio id="audio" controls loop preload="auto" aria-label="Kairos audio pitch">
       <source src="./pitch.mp3" type="audio/mpeg">
       Your browser does not support audio playback.
     </audio>
@@ -75,20 +75,74 @@
       audio.playbackRate = Number(event.target.value);
       audio.defaultPlaybackRate = audio.playbackRate;
     });
-    document.getElementById('restart').addEventListener('click', async () => {
+    async function playAudio() {
       try {
-        audio.currentTime = 0;
         await audio.play();
       } catch (playError) {
         if (playError.name !== 'AbortError') {
           showError('Could not start playback. Try the play button above.');
         }
       }
+    }
+    document.getElementById('restart').addEventListener('click', () => {
+      audio.currentTime = 0;
+      playAudio();
     });
     audio.addEventListener('playing', () => { error.hidden = true; });
     audio.addEventListener('error', () => {
       showError('This browser could not play the audio. Try opening this file in Chrome or Safari.');
     });
+
+    // Native audio and native looping keep playback independent of background JS timers.
+    if (navigator.audioSession) {
+      try {
+        navigator.audioSession.type = 'playback';
+      } catch {
+        // Browsers without this optional mode still use native audio playback.
+      }
+    }
+    const mediaSession = navigator.mediaSession;
+    if (mediaSession) {
+      if (typeof MediaMetadata === 'function') {
+        mediaSession.metadata = new MediaMetadata({
+          title: 'Kairos audio pitch',
+          artist: 'Kairos'
+        });
+      }
+      function syncMediaSession() {
+        mediaSession.playbackState = audio.ended ? 'none' : audio.paused ? 'paused' : 'playing';
+        if (typeof mediaSession.setPositionState === 'function' && Number.isFinite(audio.duration) && audio.duration > 0) {
+          mediaSession.setPositionState({
+            duration: audio.duration,
+            playbackRate: audio.playbackRate,
+            position: Math.max(0, Math.min(audio.currentTime, audio.duration))
+          });
+        }
+      }
+      function seekTo(position) {
+        if (!Number.isFinite(audio.duration) || !Number.isFinite(position)) return;
+        audio.currentTime = Math.max(0, Math.min(position, audio.duration));
+        syncMediaSession();
+      }
+      const actions = {
+        play: playAudio,
+        pause: () => audio.pause(),
+        stop: () => { audio.pause(); seekTo(0); },
+        seekbackward: ({ seekOffset = 10 }) => seekTo(audio.currentTime - seekOffset),
+        seekforward: ({ seekOffset = 10 }) => seekTo(audio.currentTime + seekOffset),
+        seekto: ({ seekTime }) => seekTo(seekTime)
+      };
+      for (const [action, handler] of Object.entries(actions)) {
+        try {
+          mediaSession.setActionHandler(action, handler);
+        } catch {
+          // Each browser exposes only the system media controls it supports.
+        }
+      }
+      for (const event of ['loadedmetadata', 'durationchange', 'playing', 'pause', 'ended', 'seeked', 'ratechange', 'timeupdate']) {
+        audio.addEventListener(event, syncMediaSession);
+      }
+    }
   </script>
 </body>
 </html>
