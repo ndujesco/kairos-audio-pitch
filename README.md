@@ -6,6 +6,12 @@ The player has a full-width timeline with a large drag handle, elapsed and total
 
 Open [index.html](index.html) in your browser and press Play. Keep `pitch.mp3` beside `index.html` when moving or downloading the player.
 
+## Live player and website sync
+
+The same page is also hosted at **https://kairos-community.vercel.app/audio-ptch.html** on the existing Kairos Vercel project. This repository remains the source for both copies.
+
+After any change to `index.html` or `pitch.mp3`, run `npm run audio:sync` from the sibling `../website/` repository. This copies both files byte for byte, with checksums in `website/audio-pitch/manifest.json`. Commit the changes in both repositories and push the website to update Vercel. Local website builds also sync automatically; Vercel builds verify the committed copies. Do not edit the website's public copies separately.
+
 ## Listen while using your phone
 
 Start playback, then switch apps or lock the screen while leaving the browser tab open. The player uses native audio and native looping, and adds play, pause and seek controls to the lock screen or media notification where supported. It also requests the playback audio-session mode when the browser provides it.
